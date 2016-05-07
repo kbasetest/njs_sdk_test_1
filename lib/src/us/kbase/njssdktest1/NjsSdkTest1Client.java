@@ -10,13 +10,13 @@ import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
 import us.kbase.common.service.RpcContext;
+import us.kbase.common.service.UObject;
 import us.kbase.common.service.UnauthorizedException;
 
 /**
  * <p>Original spec-file module name: njs_sdk_test_1</p>
  * <pre>
  * A KBase module: njs_sdk_test_1
- * This sample module contains one small method - filter_contigs.
  * </pre>
  */
 public class NjsSdkTest1Client {
@@ -140,20 +140,19 @@ public class NjsSdkTest1Client {
     }
 
     /**
-     * <p>Original spec-file function name: filter_contigs</p>
+     * <p>Original spec-file function name: run</p>
      * <pre>
-     * Filter contigs in a ContigSet by DNA length
      * </pre>
-     * @param   params   instance of type {@link us.kbase.njssdktest1.FilterContigsParams FilterContigsParams}
-     * @return   instance of type {@link us.kbase.njssdktest1.FilterContigsResults FilterContigsResults}
+     * @param   params   instance of unspecified object
+     * @return   parameter "results" of unspecified object
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public FilterContigsResults filterContigs(FilterContigsParams params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public UObject run(UObject params, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(params);
-        TypeReference<List<FilterContigsResults>> retType = new TypeReference<List<FilterContigsResults>>() {};
-        List<FilterContigsResults> res = caller.jsonrpcCall("njs_sdk_test_1.filter_contigs", args, retType, true, true, jsonRpcContext);
+        TypeReference<List<UObject>> retType = new TypeReference<List<UObject>>() {};
+        List<UObject> res = caller.jsonrpcCall("njs_sdk_test_1.run", args, retType, true, true, jsonRpcContext);
         return res.get(0);
     }
 }

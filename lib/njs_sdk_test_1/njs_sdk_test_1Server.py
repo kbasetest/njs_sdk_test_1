@@ -61,9 +61,9 @@ class JSONObjectEncoder(json.JSONEncoder):
 sync_methods = {}
 async_run_methods = {}
 async_check_methods = {}
-async_run_methods['njs_sdk_test_1.filter_contigs_async'] = ['njs_sdk_test_1', 'filter_contigs']
-async_check_methods['njs_sdk_test_1.filter_contigs_check'] = ['njs_sdk_test_1', 'filter_contigs']
-sync_methods['njs_sdk_test_1.filter_contigs'] = True
+async_run_methods['njs_sdk_test_1.run_async'] = ['njs_sdk_test_1', 'run']
+async_check_methods['njs_sdk_test_1.run_check'] = ['njs_sdk_test_1', 'run']
+sync_methods['njs_sdk_test_1.run'] = True
 
 class AsyncJobServiceClient(object):
 
@@ -335,10 +335,10 @@ class Application(object):
         self.serverlog.set_log_level(6)
         self.rpc_service = JSONRPCServiceCustom()
         self.method_authentication = dict()
-        self.rpc_service.add(impl_njs_sdk_test_1.filter_contigs,
-                             name='njs_sdk_test_1.filter_contigs',
-                             types=[dict])
-        self.method_authentication['njs_sdk_test_1.filter_contigs'] = 'required'
+        self.rpc_service.add(impl_njs_sdk_test_1.run,
+                             name='njs_sdk_test_1.run',
+                             types=[object])
+        self.method_authentication['njs_sdk_test_1.run'] = 'required'
         self.rpc_service.add(impl_njs_sdk_test_1.status,
                              name='njs_sdk_test_1.status',
                              types=[dict])

@@ -171,10 +171,10 @@ class njs_sdk_test_1(object):
             raise ServerError('Unknown', 0, 'An unknown server error occurred')
         return resp['result']
  
-    def filter_contigs(self, params, json_rpc_context = None):
+    def run(self, params, json_rpc_context = None):
         if json_rpc_context and type(json_rpc_context) is not dict:
-            raise ValueError('Method filter_contigs: argument json_rpc_context is not type dict as required.')
-        resp = self._call('njs_sdk_test_1.filter_contigs',
+            raise ValueError('Method run: argument json_rpc_context is not type dict as required.')
+        resp = self._call('njs_sdk_test_1.run',
                           [params], json_rpc_context)
         return resp[0]
  
