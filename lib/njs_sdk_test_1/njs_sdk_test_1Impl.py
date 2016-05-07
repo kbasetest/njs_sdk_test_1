@@ -1,10 +1,9 @@
 #BEGIN_HEADER
 # The header block is where all import statments should live
-import sys
-import traceback
-import uuid
-from pprint import pprint, pformat
-from biokbase.workspace.client import Workspace as workspaceService
+import os
+from pprint import pformat
+from biokbase.workspace.client import Workspace as workspaceService  # @UnresolvedImport @IgnorePep8
+from njs_sdk_test_1.GenericClient import GenericClient
 #END_HEADER
 
 
@@ -37,14 +36,50 @@ class njs_sdk_test_1:
     def __init__(self, config):
         #BEGIN_CONSTRUCTOR
         self.workspaceURL = config['workspace-url']
+        self.generic_clientURL = os.environ['SDK_CALLBACK_URL']
+        self.log('Callback URL: ' + self.generic_clientURL)
         #END_CONSTRUCTOR
         pass
-    
 
     def run(self, ctx, params):
         # ctx is the context object
         # return variables are: results
         #BEGIN run
+        mod = self.__class__.__name__
+        print('Running module {} commit {}'.format(mod, self.GIT_COMMIT_HASH))
+        token = ctx['token']
+        gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
+                           token=token)
+        calls = {}
+        for action in params['action']:
+            del action  # TODO
+        if 'save' in params:
+            # 1: workspace name
+            # 2: workspace object ID
+            o = {'name': mod,
+                 'hash': self.GIT_COMMIT_HASH,
+                 'calls': calls
+                 }
+            prov = gc.sync_call("CallbackServer.get_provenance", [])
+            print('Saving workspace object\n' + pformat(o))
+            print('with provenance\n' + pformat(prov))
+
+            ws = workspaceService(self.workspaceURL, token=token)
+            print('result:')
+            print(ws.save_objects({
+                'workspace': params['save']['ws'],
+                'objects': [
+                    {
+                     'type': 'Empty.AType',
+                     'data': o,
+                     'name': params['save']['name'],
+                     'provenance': prov
+                     }
+                    ]
+            }))
+        results = {'name': mod,
+                   'hash': self.GIT_COMMIT_HASH,
+                   'calls': calls}
         #END run
 
         # At some point might do deeper type checking...
@@ -56,7 +91,11 @@ class njs_sdk_test_1:
 
     def status(self, ctx):
         #BEGIN_STATUS
-        returnVal = {'state': "OK", 'message': "", 'version': self.VERSION, 
-                     'git_url': self.GIT_URL, 'git_commit_hash': self.GIT_COMMIT_HASH}
+        returnVal = {'state': "OK",
+                     'message': "",
+                     'version': self.VERSION,
+                     'git_url': self.GIT_URL,
+                     'git_commit_hash': self.GIT_COMMIT_HASH}
+        del ctx  # shut up pep8
         #END_STATUS
         return [returnVal]
