@@ -25,7 +25,7 @@ class njs_sdk_test_1:
     VERSION = "0.0.1"
     GIT_URL = ""
     GIT_COMMIT_HASH = "ef4be0b1bd369ec2d5f0e878015465170c2c9a73"
-    
+
     #BEGIN_CLASS_HEADER
     # Class variables and functions can be defined in this block
     workspaceURL = None
