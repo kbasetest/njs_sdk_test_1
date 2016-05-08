@@ -51,12 +51,15 @@ class njs_sdk_test_1:
         gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                            token=token)
         calls = []
-        for c in params['calls']:
-            meth = c['method']
-            par = c['params']
-            ver = c['ver']
-            calls.append(gc.sync_call(
-                meth, par, json_rpc_context={'service_ver': ver}))
+        if 'calls' in params:
+            for c in params['calls']:
+                meth = c['method']
+                par = c['params']
+                ver = c['ver']
+                print('Calling method {} version {} with params:\n{}'.format(
+                    meth, ver, pformat(par)))
+                calls.append(gc.sync_call(
+                    meth, par, json_rpc_context={'service_ver': ver}))
         if 'save' in params:
             # 1: workspace name
             # 2: workspace object ID
