@@ -50,9 +50,13 @@ class njs_sdk_test_1:
         token = ctx['token']
         gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                            token=token)
-        calls = {}
-        for action in params['actions']:
-            del action  # TODO
+        calls = []
+        for c in params['calls']:
+            meth = c['method']
+            par = c['params']
+            ver = c['ver']
+            calls.append(gc.sync_call(
+                meth, par, json_rpc_context={'service_ver': ver}))
         if 'save' in params:
             # 1: workspace name
             # 2: workspace object ID
