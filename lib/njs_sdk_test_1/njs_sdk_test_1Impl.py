@@ -51,7 +51,7 @@ class njs_sdk_test_1:
         gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                            token=token)
         calls = {}
-        for action in params['action']:
+        for action in params['actions']:
             del action  # TODO
         if 'save' in params:
             # 1: workspace name
