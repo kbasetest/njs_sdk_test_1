@@ -60,13 +60,12 @@ class njs_sdk_test_1:
                  'hash': self.GIT_COMMIT_HASH,
                  'calls': calls
                  }
-            prov = gc.sync_call("CallbackServer.get_provenance", [])
+            prov = gc.sync_call("CallbackServer.get_provenance", [])[0]
             print('Saving workspace object\n' + pformat(o))
             print('with provenance\n' + pformat(prov))
 
             ws = workspaceService(self.workspaceURL, token=token)
-            print('result:')
-            print(ws.save_objects({
+            info = ws.save_objects({
                 'workspace': params['save']['ws'],
                 'objects': [
                     {
@@ -76,7 +75,9 @@ class njs_sdk_test_1:
                      'provenance': prov
                      }
                     ]
-            }))
+            })
+            print('result:')
+            print(info)
         results = {'name': mod,
                    'hash': self.GIT_COMMIT_HASH,
                    'calls': calls}
