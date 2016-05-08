@@ -37,7 +37,7 @@ class njs_sdk_test_1:
         #BEGIN_CONSTRUCTOR
         self.workspaceURL = config['workspace-url']
         self.generic_clientURL = os.environ['SDK_CALLBACK_URL']
-        self.log('Callback URL: ' + self.generic_clientURL)
+        print('Callback URL: ' + self.generic_clientURL)
         #END_CONSTRUCTOR
         pass
 
