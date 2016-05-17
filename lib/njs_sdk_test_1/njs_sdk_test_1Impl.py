@@ -92,6 +92,8 @@ class njs_sdk_test_1:
                  'hash': self.GIT_COMMIT_HASH,
                  'calls': calls
                  }
+            gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
+                               token=token)
             prov = gc.sync_call("CallbackServer.get_provenance", [])[0]
             self.log('Saving workspace object\n' + pformat(o))
             self.log('with provenance\n' + pformat(prov))
