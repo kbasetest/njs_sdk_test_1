@@ -68,14 +68,16 @@ class njs_sdk_test_1:
                          'params:\n{}').format(meth, ver, pformat(par)))
                 calls.append(gc.sync_call(
                     meth, par, json_rpc_context={'service_ver': ver}))
-        if 'async' in params:
-            wait_time = params['async'].get('wait_time')
+        if 'async_jobs' in params:
+            wait_time = params.get('async_wait')
+            if not wait_time:
+                wait_time = 10000
             gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                                token=token, async_job_check_time_ms=wait_time)
 
             # jobs must be a list of lists, each sublist is
             # [module.method, [params], service_ver]
-            jobs = params['async']['jobs']
+            jobs = params['async_jobs']
             self.log('Running jobs asynchronously:')
             for j in jobs:
                 self.log('Method: {} version: {} params:\n{}'.format(
