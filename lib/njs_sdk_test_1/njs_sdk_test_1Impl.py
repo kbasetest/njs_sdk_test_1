@@ -51,7 +51,8 @@ class njs_sdk_test_1:
         # return variables are: results
         #BEGIN run
         mod = self.__class__.__name__
-        self.log('Running commit {}'.format(self.GIT_COMMIT_HASH))
+        self.log('Running commit {} with params:\n{}'.format(
+            self.GIT_COMMIT_HASH, pformat(params)))
         token = ctx['token']
 
         calls = []
