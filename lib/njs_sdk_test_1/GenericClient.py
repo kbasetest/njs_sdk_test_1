@@ -76,6 +76,7 @@ def _read_inifile(file=_os.environ.get(  # @ReservedAssignment
 class ServerError(Exception):
 
     def __init__(self, name, code, message, data=None, error=None):
+        super(Exception, self).__init__(message)
         self.name = name
         self.code = code
         self.message = '' if message is None else message
