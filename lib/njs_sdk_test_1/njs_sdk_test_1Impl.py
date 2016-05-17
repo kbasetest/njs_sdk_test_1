@@ -33,7 +33,7 @@ class njs_sdk_test_1:
     def log(self, message, prefix_newline=False):
         mod = self.__class__.__name__
         print(('\n' if prefix_newline else '') +
-              str(time.time()) + ' ' + mod + ': ' + message)
+              str(time.time()) + ' ' + mod + ': ' + str(message))
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -64,8 +64,8 @@ class njs_sdk_test_1:
                 meth = c['method']
                 par = c['params']
                 ver = c['ver']
-                self.log('Synchronously calling method {} version {} with ' +
-                         'params:\n{}'.format(meth, ver, pformat(par)))
+                self.log(('Synchronously calling method {} version {} with ' +
+                         'params:\n{}').format(meth, ver, pformat(par)))
                 calls.append(gc.sync_call(
                     meth, par, json_rpc_context={'service_ver': ver}))
         if 'async' in params:
