@@ -182,6 +182,10 @@ class GenericClient(object):
                 [{'module_name': module_name,
                   'version': service_version}], None)[0]
             url = service_status_ret['url']
+        if service_version:
+            if not json_rpc_context:
+                json_rpc_context = {}
+            json_rpc_context['service_ver'] = service_version
         return self._call(url, service_method, param_list, json_rpc_context)
 
     def _asynchronous_call_async(self, service_method, params,
@@ -201,9 +205,10 @@ class GenericClient(object):
                           service_version=None, json_rpc_context=None):
         job_id = self._asynchronous_call_async(
             service_method, params, service_version, json_rpc_context)
+        print('got job id ' + job_id)
         while True:
             time.sleep(self.async_job_check_time)
-            print(time.time() + " Generic client checking job state")
+            print(str(time.time()) + " Generic client checking job state")
             job_state = self._asynchronous_call_check(service_method, job_id)
             if job_state['finished']:
                 return job_state['result']
