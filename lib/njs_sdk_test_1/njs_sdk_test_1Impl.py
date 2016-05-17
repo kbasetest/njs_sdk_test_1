@@ -4,6 +4,8 @@ import os
 from pprint import pformat
 from biokbase.workspace.client import Workspace as workspaceService  # @UnresolvedImport @IgnorePep8
 from njs_sdk_test_1.GenericClient import GenericClient
+import time
+from multiprocessing.pool import ThreadPool
 #END_HEADER
 
 
@@ -28,7 +30,10 @@ class njs_sdk_test_1:
 
     #BEGIN_CLASS_HEADER
     # Class variables and functions can be defined in this block
-    workspaceURL = None
+    def log(self, message, prefix_newline=False):
+        mod = self.__class__.__name__
+        print(('\n' if prefix_newline else '') +
+              str(time.time()) + ' ' + mod + ': ' + message)
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -37,7 +42,7 @@ class njs_sdk_test_1:
         #BEGIN_CONSTRUCTOR
         self.workspaceURL = config['workspace-url']
         self.generic_clientURL = os.environ['SDK_CALLBACK_URL']
-        print('Callback URL: ' + self.generic_clientURL)
+        self.log('Callback URL: ' + self.generic_clientURL)
         #END_CONSTRUCTOR
         pass
 
@@ -46,20 +51,40 @@ class njs_sdk_test_1:
         # return variables are: results
         #BEGIN run
         mod = self.__class__.__name__
-        print('Running module {} commit {}'.format(mod, self.GIT_COMMIT_HASH))
+        self.log('Running commit {}'.format(self.GIT_COMMIT_HASH))
         token = ctx['token']
-        gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
-                           token=token)
+
         calls = []
+        async = []
+
         if 'calls' in params:
+            gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
+                               token=token)
             for c in params['calls']:
                 meth = c['method']
                 par = c['params']
                 ver = c['ver']
-                print('Calling method {} version {} with params:\n{}'.format(
-                    meth, ver, pformat(par)))
+                self.log('Synchronously calling method {} version {} with ' +
+                         'params:\n{}'.format(meth, ver, pformat(par)))
                 calls.append(gc.sync_call(
                     meth, par, json_rpc_context={'service_ver': ver}))
+        if 'async' in params:
+            wait_time = params['async'].get('wait_time')
+            gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
+                               token=token, async_job_check_time_ms=wait_time)
+
+            # jobs must be a list of lists, each sublist is
+            # [module.method, [params], service_ver]
+            jobs = params['async']['jobs']
+            self.log('Running jobs asynchronously:')
+            for j in jobs:
+                self.log('Method: {} version: {} params:\n{}'.format(
+                    j[0], j[2], pformat(j[1])))
+            pool = ThreadPool(processes=len(jobs))
+            async = pool.map(gc.asynchronous_call, jobs, chunksize=1)
+
+        if 'wait' in params:
+            time.sleep(params['wait'])
         if 'save' in params:
             # 1: workspace name
             # 2: workspace object ID
@@ -68,8 +93,8 @@ class njs_sdk_test_1:
                  'calls': calls
                  }
             prov = gc.sync_call("CallbackServer.get_provenance", [])[0]
-            print('Saving workspace object\n' + pformat(o))
-            print('with provenance\n' + pformat(prov))
+            self.log('Saving workspace object\n' + pformat(o))
+            self.log('with provenance\n' + pformat(prov))
 
             ws = workspaceService(self.workspaceURL, token=token)
             info = ws.save_objects({
@@ -83,11 +108,14 @@ class njs_sdk_test_1:
                      }
                     ]
             })
-            print('result:')
-            print(info)
+            self.log('result:')
+            self.log(info)
         results = {'name': mod,
-                   'hash': self.GIT_COMMIT_HASH,
-                   'calls': calls}
+                   'hash': self.GIT_COMMIT_HASH}
+        if calls:
+            results['calls'] = calls
+        if async:
+            results['async'] = async
         #END run
 
         # At some point might do deeper type checking...
