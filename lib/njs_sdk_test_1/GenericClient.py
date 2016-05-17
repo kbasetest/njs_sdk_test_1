@@ -104,7 +104,7 @@ class GenericClient(object):
                  password=None, token=None, ignore_authrc=False,
                  trust_all_ssl_certificates=False,
                  use_url_lookup=True,
-                 async_job_check_time_ms=10000):
+                 async_job_check_time_ms=5000):
         if url is None:
             raise ValueError('A url is required')
         scheme, _, _, _, _, _ = _urlparse.urlparse(url)
@@ -115,7 +115,7 @@ class GenericClient(object):
         self._headers = dict()
         self.trust_all_ssl_certificates = trust_all_ssl_certificates
         self.use_url_lookup = use_url_lookup
-        self.async_job_check_time = async_job_check_time_ms
+        self.async_job_check_time = async_job_check_time_ms / 1000.0
         # token overrides user_id and password
         if token is not None:
             self._headers['AUTHORIZATION'] = token
@@ -191,7 +191,7 @@ class GenericClient(object):
                 json_rpc_context = {}
             json_rpc_context['service_ver'] = service_version
         return self._call(self.url, service_method + '_async',
-                          [params], json_rpc_context)[0]
+                          params, json_rpc_context)[0]
 
     def _asynchronous_call_check(self, service_method, job_id):
         resp = self._call(self.url, service_method + '_check', [job_id])

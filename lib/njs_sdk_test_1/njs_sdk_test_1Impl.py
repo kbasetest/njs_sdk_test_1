@@ -90,7 +90,7 @@ class njs_sdk_test_1:
             async = pool.map(run, jobs, chunksize=1)
 
         if 'wait' in params:
-            self.log('waiting for ' + str(params['wait'] + ' ms'))
+            self.log('waiting for ' + str(params['wait']) + ' ms')
             time.sleep(params['wait'])
         if 'save' in params:
             # 1: workspace name
