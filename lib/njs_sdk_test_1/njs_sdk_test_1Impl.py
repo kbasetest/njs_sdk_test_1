@@ -72,7 +72,7 @@ class njs_sdk_test_1:
         if 'async_jobs' in params:
             wait_time = params.get('async_wait')
             if not wait_time:
-                wait_time = 10000
+                wait_time = 5000
             gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                                token=token, async_job_check_time_ms=wait_time)
 
@@ -119,6 +119,9 @@ class njs_sdk_test_1:
             })
             self.log('result:')
             self.log(info)
+        if 'except' in params:
+            raise ValueError(params.get('except'))
+
         results = {'name': mod,
                    'hash': self.GIT_COMMIT_HASH}
         if calls:
