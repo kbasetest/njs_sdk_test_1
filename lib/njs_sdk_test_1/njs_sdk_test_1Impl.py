@@ -88,8 +88,9 @@ class njs_sdk_test_1:
             for j in jobs:
                 self.log('Method: {} version: {} params:\n{}'.format(
                     j[0], j[2], pformat(j[1])))
-            pool = ThreadPool(processes=len(jobs))
-            async = pool.map(run, jobs, chunksize=1)
+                async.append(run(j))
+#             pool = ThreadPool(processes=len(jobs))
+#             async = pool.map(run, jobs, chunksize=1)
             self.log('got async\n' + pformat(async))
 
         if 'wait' in params:
@@ -123,7 +124,7 @@ class njs_sdk_test_1:
             self.log('result:')
             self.log(info)
         if 'except' in params:
-            raise ValueError(params.get('except'))
+            raise ValueError(params.get('except') + ' ' + params.get('id'))
 
         results = {'name': mod,
                    'hash': self.GIT_COMMIT_HASH}
@@ -131,6 +132,8 @@ class njs_sdk_test_1:
             results['calls'] = calls
         if async:
             results['async'] = async
+        if 'id' in params:
+            results['id'] = params['id']
         #END run
 
         # At some point might do deeper type checking...
