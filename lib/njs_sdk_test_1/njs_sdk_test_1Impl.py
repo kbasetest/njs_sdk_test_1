@@ -77,7 +77,9 @@ class njs_sdk_test_1:
                                token=token, async_job_check_time_ms=wait_time)
 
             def run(params):
-                return gc.asynchronous_call(params[0], params[1], params[2])
+                ret = gc.asynchronous_call(params[0], params[1], params[2])
+                self.log('got back from async\n' + pformat(ret))
+                return ret
 
             # jobs must be a list of lists, each sublist is
             # [module.method, [params], service_ver]
@@ -88,6 +90,7 @@ class njs_sdk_test_1:
                     j[0], j[2], pformat(j[1])))
             pool = ThreadPool(processes=len(jobs))
             async = pool.map(run, jobs, chunksize=1)
+            self.log('got async\n' + pformat(async))
 
         if 'wait' in params:
             self.log('waiting for ' + str(params['wait']) + ' sec')
