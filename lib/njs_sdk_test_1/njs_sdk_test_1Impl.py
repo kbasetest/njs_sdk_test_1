@@ -91,7 +91,7 @@ class njs_sdk_test_1:
                 self.log('Method: {} version: {} params:\n{}'.format(
                     j[0], j[2], pformat(j[1])))
 #                 async.append(run(j))
-                results.append(pool.apply_async(run, j))
+                results.append(pool.apply_async(run, (j,)))
 
             pool.close()
             pool.join()
