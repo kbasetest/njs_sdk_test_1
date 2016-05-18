@@ -85,10 +85,17 @@ class njs_sdk_test_1:
             # [module.method, [params], service_ver]
             jobs = params['async_jobs']
             self.log('Running jobs asynchronously:')
+            results = []
+            pool = ThreadPool(processes=len(jobs))
             for j in jobs:
                 self.log('Method: {} version: {} params:\n{}'.format(
                     j[0], j[2], pformat(j[1])))
-                async.append(run(j))
+#                 async.append(run(j))
+                results.append(pool.apply_async(run, j))
+
+            pool.close()
+            pool.join()
+            async = [r.get() for r in results]
 #             pool = ThreadPool(processes=len(jobs))
 #             async = pool.map(run, jobs, chunksize=1)
             self.log('got async\n' + pformat(async))
