@@ -43,7 +43,7 @@ class njs_sdk_test_1:
         # this doesn't work, not sure why. Returns list of Nones.
 #             return = pool.map(method, jobs, chunksize=1)
         for j in jobs:
-            self.log('ID: {} Method: {} version: {} params:\n{}'.format(
+            self.log('Method: {} version: {} params:\n{}'.format(
                 j['method'], j['ver'], pformat(j['params'])))
 #                 async.append(run(j))
             res.append(pool.apply_async(method, (j,)))
