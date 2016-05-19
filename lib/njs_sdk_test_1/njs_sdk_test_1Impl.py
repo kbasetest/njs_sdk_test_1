@@ -6,6 +6,7 @@ from biokbase.workspace.client import Workspace as workspaceService  # @Unresolv
 from njs_sdk_test_1.GenericClient import GenericClient
 import time
 from multiprocessing.pool import ThreadPool
+import traceback
 #END_HEADER
 
 
@@ -34,6 +35,29 @@ class njs_sdk_test_1:
         mod = self.__class__.__name__
         print(('\n' if prefix_newline else '') +
               str(time.time()) + ' ' + mod + ': ' + str(message))
+
+    def run_jobs(self, method, jobs, id_):
+        res = []
+        pool = ThreadPool(processes=len(jobs))
+        # this doesn't work, not sure why. Returns list of Nones.
+#             return = pool.map(method, jobs, chunksize=1)
+        for j in jobs:
+            self.log('Method: {} version: {} params:\n{}'.format(
+                j['method'], j['ver'], pformat(j['params'])))
+#                 async.append(run(j))
+            res.append(pool.apply_async(method, (j,)))
+
+        pool.close()
+        pool.join()
+        try:
+            res = [r.get() for r in res]
+        except Exception as e:
+            print('caught exception running jobs. ID: {} Exp: {}'
+                  .format(id_, e))
+            traceback.print_exc()
+            raise
+        self.log('got job results:\n' + pformat(res))
+        return res
     #END_CLASS_HEADER
 
     # config contains contents of config file in a hash or None if it couldn't
@@ -67,7 +91,7 @@ class njs_sdk_test_1:
             results['id'] = params['id']
         if 'calls' in params:
 
-            def run(p):
+            def run_sync(p):
                 ret = gc.sync_call(p['method'], p['params'],
                                    json_rpc_context={'service_ver': p['ver']})
                 self.log('got back from sync\n' + pformat(ret))
@@ -75,21 +99,10 @@ class njs_sdk_test_1:
 
             jobs = params['calls']
             self.log('Running jobs with synchronous client call:')
-            res = []
-            pool = ThreadPool(processes=len(jobs))
-            for j in jobs:
-                self.log('Method: {} version: {} params:\n{}'.format(
-                    j['method'], j['ver'], pformat(j['params'])))
-#                 async.append(run(j))
-                res.append(pool.apply_async(run, (j,)))
-
-            pool.close()
-            pool.join()
-            calls = [r.get() for r in res]
-            results['calls'] = calls
+            results['calls'] = self.run_jobs(run_sync, jobs, results.get('id'))
         if 'async_jobs' in params:
 
-            def run(p):
+            def run_async(p):
                 ret = gc.asynchronous_call(p['method'], p['params'], p['ver'])
                 self.log('got back from async\n' + pformat(ret))
                 return ret
@@ -98,21 +111,8 @@ class njs_sdk_test_1:
             # [module.method, [params], service_ver]
             jobs = params['async_jobs']
             self.log('Running jobs with asynchronous client call:')
-            res = []
-            pool = ThreadPool(processes=len(jobs))
-            for j in jobs:
-                self.log('Method: {} version: {} params:\n{}'.format(
-                    j['method'], j['ver'], pformat(j['params'])))
-#                 async.append(run(j))
-                res.append(pool.apply_async(run, (j,)))
-
-            pool.close()
-            pool.join()
-            async = [r.get() for r in res]
-            results['async'] = async
-            # this doesn't work, not sure why. Returns list of Nones.
-#             async = pool.map(run, jobs, chunksize=1)
-            self.log('got async\n' + pformat(async))
+            results['calls'] = self.run_jobs(
+                run_async, jobs, results.get('id'))
 
         if 'wait' in params:
             self.log('waiting for ' + str(params['wait']) + ' sec')
