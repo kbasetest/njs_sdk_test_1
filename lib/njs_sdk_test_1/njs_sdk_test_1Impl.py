@@ -55,44 +55,54 @@ class njs_sdk_test_1:
             self.GIT_COMMIT_HASH, pformat(params)))
         token = ctx['token']
 
+        wait_time = params.get('async_wait')
+        if not wait_time:
+            wait_time = 5000
+        gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
+                           token=token, async_job_check_time_ms=wait_time)
+
         results = {'name': mod,
                    'hash': self.GIT_COMMIT_HASH}
         if 'id' in params:
             results['id'] = params['id']
         if 'calls' in params:
-            calls = []
-            gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
-                               token=token)
-            for c in params['calls']:
-                meth = c['method']
-                par = c['params']
-                ver = c['ver']
-                self.log(('Synchronously calling method {} version {} with ' +
-                         'params:\n{}').format(meth, ver, pformat(par)))
-                calls.append(gc.sync_call(
-                    meth, par, json_rpc_context={'service_ver': ver}))
-                results['calls'] = calls
-        if 'async_jobs' in params:
-            wait_time = params.get('async_wait')
-            if not wait_time:
-                wait_time = 5000
-            gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
-                               token=token, async_job_check_time_ms=wait_time)
 
-            def run(params):
-                ret = gc.asynchronous_call(params[0], params[1], params[2])
+            def run(p):
+                ret = gc.sync_call(p['method'], p['params'],
+                                   json_rpc_context={'service_ver': p['ver']})
+                self.log('got back from sync\n' + pformat(ret))
+                return ret
+
+            jobs = params['calls']
+            self.log('Running jobs with synchronous client call:')
+            res = []
+            pool = ThreadPool(processes=len(jobs))
+            for j in jobs:
+                self.log('Method: {} version: {} params:\n{}'.format(
+                    j['method'], j['ver'], pformat(j['params'])))
+#                 async.append(run(j))
+                res.append(pool.apply_async(run, (j,)))
+
+            pool.close()
+            pool.join()
+            calls = [r.get() for r in res]
+            results['calls'] = calls
+        if 'async_jobs' in params:
+
+            def run(p):
+                ret = gc.asynchronous_call(p['method'], p['params'], p['ver'])
                 self.log('got back from async\n' + pformat(ret))
                 return ret
 
             # jobs must be a list of lists, each sublist is
             # [module.method, [params], service_ver]
             jobs = params['async_jobs']
-            self.log('Running jobs asynchronously:')
+            self.log('Running jobs with asynchronous client call:')
             res = []
             pool = ThreadPool(processes=len(jobs))
             for j in jobs:
                 self.log('Method: {} version: {} params:\n{}'.format(
-                    j[0], j[2], pformat(j[1])))
+                    j['method'], j['ver'], pformat(j['params'])))
 #                 async.append(run(j))
                 res.append(pool.apply_async(run, (j,)))
 
