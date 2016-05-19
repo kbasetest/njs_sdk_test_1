@@ -55,10 +55,12 @@ class njs_sdk_test_1:
             self.GIT_COMMIT_HASH, pformat(params)))
         token = ctx['token']
 
-        calls = []
-        async = []
-
+        results = {'name': mod,
+                   'hash': self.GIT_COMMIT_HASH}
+        if 'id' in params:
+            results['id'] = params['id']
         if 'calls' in params:
+            calls = []
             gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                                token=token)
             for c in params['calls']:
@@ -69,6 +71,7 @@ class njs_sdk_test_1:
                          'params:\n{}').format(meth, ver, pformat(par)))
                 calls.append(gc.sync_call(
                     meth, par, json_rpc_context={'service_ver': ver}))
+                results['calls'] = calls
         if 'async_jobs' in params:
             wait_time = params.get('async_wait')
             if not wait_time:
@@ -85,35 +88,31 @@ class njs_sdk_test_1:
             # [module.method, [params], service_ver]
             jobs = params['async_jobs']
             self.log('Running jobs asynchronously:')
-            results = []
+            res = []
             pool = ThreadPool(processes=len(jobs))
             for j in jobs:
                 self.log('Method: {} version: {} params:\n{}'.format(
                     j[0], j[2], pformat(j[1])))
 #                 async.append(run(j))
-                results.append(pool.apply_async(run, (j,)))
+                res.append(pool.apply_async(run, (j,)))
 
             pool.close()
             pool.join()
-            async = [r.get() for r in results]
-#             pool = ThreadPool(processes=len(jobs))
+            async = [r.get() for r in res]
+            results['async'] = async
+            # this doesn't work, not sure why. Returns list of Nones.
 #             async = pool.map(run, jobs, chunksize=1)
             self.log('got async\n' + pformat(async))
 
         if 'wait' in params:
             self.log('waiting for ' + str(params['wait']) + ' sec')
             time.sleep(params['wait'])
+            results['wait'] = params['wait']
         if 'save' in params:
-            # 1: workspace name
-            # 2: workspace object ID
-            o = {'name': mod,
-                 'hash': self.GIT_COMMIT_HASH,
-                 'calls': calls
-                 }
             gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
                                token=token)
             prov = gc.sync_call("CallbackServer.get_provenance", [])[0]
-            self.log('Saving workspace object\n' + pformat(o))
+            self.log('Saving workspace object\n' + pformat(results))
             self.log('with provenance\n' + pformat(prov))
 
             ws = workspaceService(self.workspaceURL, token=token)
@@ -122,7 +121,7 @@ class njs_sdk_test_1:
                 'objects': [
                     {
                      'type': 'Empty.AType',
-                     'data': o,
+                     'data': results,
                      'name': params['save']['name'],
                      'provenance': prov
                      }
@@ -132,15 +131,6 @@ class njs_sdk_test_1:
             self.log(info)
         if 'except' in params:
             raise ValueError(params.get('except') + ' ' + params.get('id'))
-
-        results = {'name': mod,
-                   'hash': self.GIT_COMMIT_HASH}
-        if calls:
-            results['calls'] = calls
-        if async:
-            results['async'] = async
-        if 'id' in params:
-            results['id'] = params['id']
         #END run
 
         # At some point might do deeper type checking...
