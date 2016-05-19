@@ -33,16 +33,17 @@ class njs_sdk_test_1:
     # Class variables and functions can be defined in this block
     def log(self, message, prefix_newline=False):
         mod = self.__class__.__name__
-        print(('\n' if prefix_newline else '') +
-              str(time.time()) + ' ' + mod + ': ' + str(message))
+        print('{}{} {} ID: {}: {}'.format(
+            ('\n' if prefix_newline else ''),
+            str(time.time()), mod, self.id_, str(message)))
 
-    def run_jobs(self, method, jobs, id_):
+    def run_jobs(self, method, jobs):
         res = []
         pool = ThreadPool(processes=len(jobs))
         # this doesn't work, not sure why. Returns list of Nones.
 #             return = pool.map(method, jobs, chunksize=1)
         for j in jobs:
-            self.log('Method: {} version: {} params:\n{}'.format(
+            self.log('ID: {} Method: {} version: {} params:\n{}'.format(
                 j['method'], j['ver'], pformat(j['params'])))
 #                 async.append(run(j))
             res.append(pool.apply_async(method, (j,)))
@@ -52,11 +53,10 @@ class njs_sdk_test_1:
         try:
             res = [r.get() for r in res]
         except Exception as e:
-            print('caught exception running jobs. ID: {} Exp: {}'
-                  .format(id_, e))
+            print('caught exception running jobs: ' + str(e))
             traceback.print_exc()
             raise
-        self.log('got job results:\n' + pformat(res))
+        self.log('got job results\n' + pformat(res))
         return res
     #END_CLASS_HEADER
 
@@ -66,6 +66,7 @@ class njs_sdk_test_1:
         #BEGIN_CONSTRUCTOR
         self.workspaceURL = config['workspace-url']
         self.generic_clientURL = os.environ['SDK_CALLBACK_URL']
+        self.id_ = None
         self.log('Callback URL: ' + self.generic_clientURL)
         #END_CONSTRUCTOR
         pass
@@ -75,6 +76,7 @@ class njs_sdk_test_1:
         # return variables are: results
         #BEGIN run
         mod = self.__class__.__name__
+        self.id_ = params['id']
         self.log('Running commit {} with params:\n{}'.format(
             self.GIT_COMMIT_HASH, pformat(params)))
         token = ctx['token']
@@ -86,9 +88,8 @@ class njs_sdk_test_1:
                            token=token, async_job_check_time_ms=wait_time)
 
         results = {'name': mod,
-                   'hash': self.GIT_COMMIT_HASH}
-        if 'id' in params:
-            results['id'] = params['id']
+                   'hash': self.GIT_COMMIT_HASH,
+                   'id': self.id_}
         if 'calls' in params:
 
             def run_sync(p):
@@ -99,7 +100,7 @@ class njs_sdk_test_1:
 
             jobs = params['calls']
             self.log('Running jobs with synchronous client call:')
-            results['calls'] = self.run_jobs(run_sync, jobs, results.get('id'))
+            results['calls'] = self.run_jobs(run_sync, jobs)
         if 'async_jobs' in params:
 
             def run_async(p):
@@ -111,8 +112,7 @@ class njs_sdk_test_1:
             # [module.method, [params], service_ver]
             jobs = params['async_jobs']
             self.log('Running jobs with asynchronous client call:')
-            results['calls'] = self.run_jobs(
-                run_async, jobs, results.get('id'))
+            results['calls'] = self.run_jobs(run_async, jobs)
 
         if 'wait' in params:
             self.log('waiting for ' + str(params['wait']) + ' sec')
