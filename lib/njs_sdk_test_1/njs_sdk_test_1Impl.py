@@ -51,7 +51,7 @@ class njs_sdk_test_1:
             if run_jobs_async:
                 res.append(pool.apply_async(method, (j,)))
             else:
-                res.append(method(j['method'], j['params'], j['ver']))
+                res.append(method((j['method'], j['params'], j['ver'])))
         if run_jobs_async:
             pool.close()
             pool.join()
