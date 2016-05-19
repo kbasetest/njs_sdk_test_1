@@ -99,8 +99,7 @@ class njs_sdk_test_1:
         if 'cli_sync' in params:
 
             def run_sync(p):
-                ret = gc.sync_call(p['method'], p['params'],
-                                   json_rpc_context={'service_ver': p['ver']})
+                ret = gc.sync_call(p['method'], p['params'], p['ver'])
                 self.log('got back from sync\n' + pformat(ret))
                 return ret
 
