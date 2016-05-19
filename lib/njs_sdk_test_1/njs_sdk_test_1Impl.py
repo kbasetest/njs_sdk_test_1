@@ -37,25 +37,30 @@ class njs_sdk_test_1:
             ('\n' if prefix_newline else ''),
             str(time.time()), mod, self.id_, str(message)))
 
-    def run_jobs(self, method, jobs):
-        res = []
+    def run_jobs(self, method, jobs, run_jobs_async):
         pool = ThreadPool(processes=len(jobs))
         # this doesn't work, not sure why. Returns list of Nones.
 #             return = pool.map(method, jobs, chunksize=1)
+        if run_jobs_async:
+            self.log('running jobs in threads')
+        res = []
         for j in jobs:
             self.log('Method: {} version: {} params:\n{}'.format(
                 j['method'], j['ver'], pformat(j['params'])))
 #                 async.append(run(j))
-            res.append(pool.apply_async(method, (j,)))
-
-        pool.close()
-        pool.join()
-        try:
-            res = [r.get() for r in res]
-        except Exception as e:
-            print('caught exception running jobs: ' + str(e))
-            traceback.print_exc()
-            raise
+            if run_jobs_async:
+                res.append(pool.apply_async(method, (j,)))
+            else:
+                res.append(method(j['method'], j['params'], j['ver']))
+        if run_jobs_async:
+            pool.close()
+            pool.join()
+            try:
+                res = [r.get() for r in res]
+            except Exception as e:
+                print('caught exception running jobs: ' + str(e))
+                traceback.print_exc()
+                raise
         self.log('got job results\n' + pformat(res))
         return res
     #END_CLASS_HEADER
@@ -80,6 +85,7 @@ class njs_sdk_test_1:
         self.log('Running commit {} with params:\n{}'.format(
             self.GIT_COMMIT_HASH, pformat(params)))
         token = ctx['token']
+        run_jobs_async = params.get('run_jobs_async')
 
         wait_time = params.get('async_wait')
         if not wait_time:
@@ -90,7 +96,7 @@ class njs_sdk_test_1:
         results = {'name': mod,
                    'hash': self.GIT_COMMIT_HASH,
                    'id': self.id_}
-        if 'calls' in params:
+        if 'cli_sync' in params:
 
             def run_sync(p):
                 ret = gc.sync_call(p['method'], p['params'],
@@ -98,10 +104,10 @@ class njs_sdk_test_1:
                 self.log('got back from sync\n' + pformat(ret))
                 return ret
 
-            jobs = params['calls']
+            jobs = params['cli_sync']
             self.log('Running jobs with synchronous client call:')
-            results['calls'] = self.run_jobs(run_sync, jobs)
-        if 'async_jobs' in params:
+            results['cli_sync'] = self.run_jobs(run_sync, jobs, run_jobs_async)
+        if 'cli_async' in params:
 
             def run_async(p):
                 ret = gc.asynchronous_call(p['method'], p['params'], p['ver'])
@@ -110,9 +116,10 @@ class njs_sdk_test_1:
 
             # jobs must be a list of lists, each sublist is
             # [module.method, [params], service_ver]
-            jobs = params['async_jobs']
+            jobs = params['cli_async']
             self.log('Running jobs with asynchronous client call:')
-            results['calls'] = self.run_jobs(run_async, jobs)
+            results['cli_async'] = self.run_jobs(run_async, jobs,
+                                                 run_jobs_async)
 
         if 'wait' in params:
             self.log('waiting for ' + str(params['wait']) + ' sec')
@@ -140,7 +147,7 @@ class njs_sdk_test_1:
             self.log('result:')
             self.log(info)
         if 'except' in params:
-            raise ValueError(params.get('except') + ' ' + params.get('id'))
+            raise ValueError(params.get('except') + ' ' + self.id_)
         #END run
 
         # At some point might do deeper type checking...
