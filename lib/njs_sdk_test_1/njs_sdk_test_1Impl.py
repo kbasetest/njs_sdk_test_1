@@ -77,13 +77,18 @@ class njs_sdk_test_1:
                 pool = ThreadPool(processes=len(jobs))
 
             def run_cli(p):
-                if p.get('cli_async'):
+                async = p.get('cli_async')
+                a = 'a' if async else ''
+                self.log(('{}synchronous client run of method: {} ' +
+                          'version: {} params:\n{}').format(
+                          a, j['method'], j['ver'], pformat(j['params'])))
+                if async:
                     ret = gc.asynchronous_call(
                         p['method'], p['params'], p['ver'])
                 else:
                     ret = gc.sync_call(p['method'], p['params'], p['ver'])
                 self.log('got back from {}sync:\n{}'.format(
-                    'a' if p.get('cli_async') else '', pformat(ret)))
+                    a, pformat(ret)))
                 return ret
 
             res = []
@@ -101,7 +106,7 @@ class njs_sdk_test_1:
                 pool.close()
                 pool.join()
             try:
-                res = [r.get() for r in res if type(r) == ApplyResult]
+                res = [r.get() if type(r) == ApplyResult else r for r in res]
             except Exception as e:
                 print('caught exception running jobs: ' + str(e))
                 traceback.print_exc()
