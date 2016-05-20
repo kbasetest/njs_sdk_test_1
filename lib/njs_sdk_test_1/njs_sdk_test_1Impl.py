@@ -12,6 +12,10 @@ import traceback
 
 class njs_sdk_test_1:
     '''
+    Module Name:
+    njs_sdk_test_1
+
+    Module Description:
     Module for testing NJSwrapper
     '''
 
@@ -22,9 +26,9 @@ class njs_sdk_test_1:
     # the latter method is running.
     #########################################
     VERSION = "0.0.1"
-    GIT_URL = ""
-    GIT_COMMIT_HASH = "ef4be0b1bd369ec2d5f0e878015465170c2c9a73"
-
+    GIT_URL = "https://github.com/kbasetest/njs_sdk_test_1"
+    GIT_COMMIT_HASH = "f5b4986d4a2e7d6df1ff5794394e5c6c50b568a3"
+    
     #BEGIN_CLASS_HEADER
     # Class variables and functions can be defined in this block
     def log(self, message, prefix_newline=False):
@@ -44,6 +48,7 @@ class njs_sdk_test_1:
         self.log('Callback URL: ' + self.generic_clientURL)
         #END_CONSTRUCTOR
         pass
+    
 
     def run(self, ctx, params):
         # ctx is the context object
@@ -114,9 +119,7 @@ class njs_sdk_test_1:
             time.sleep(params['wait'])
             results['wait'] = params['wait']
         if 'save' in params:
-            gc = GenericClient(self.generic_clientURL, use_url_lookup=False,
-                               token=token)
-            prov = gc.sync_call("CallbackServer.get_provenance", [])[0]
+            prov = ctx.provenance()
             self.log('Saving workspace object\n' + pformat(results))
             self.log('with provenance\n' + pformat(prov))
 

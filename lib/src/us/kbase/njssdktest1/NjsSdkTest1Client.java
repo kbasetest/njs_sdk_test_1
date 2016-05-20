@@ -16,7 +16,7 @@ import us.kbase.common.service.UnauthorizedException;
 /**
  * <p>Original spec-file module name: njs_sdk_test_1</p>
  * <pre>
- * A KBase module: njs_sdk_test_1
+ * Module for testing NJSwrapper
  * </pre>
  */
 public class NjsSdkTest1Client {

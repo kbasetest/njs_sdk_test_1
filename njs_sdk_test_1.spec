@@ -1,5 +1,5 @@
 /*
-A KBase module: njs_sdk_test_1
+Module for testing NJSwrapper
 */
 
 module njs_sdk_test_1 {

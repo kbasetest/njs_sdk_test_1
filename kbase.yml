@@ -2,7 +2,7 @@ module-name:
     njs_sdk_test_1
 
 module-description:
-    A KBase module
+    Module for testing NJSwrapper
 
 service-language:
     python

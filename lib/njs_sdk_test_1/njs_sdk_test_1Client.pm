@@ -26,7 +26,7 @@ njs_sdk_test_1::njs_sdk_test_1Client
 =head1 DESCRIPTION
 
 
-A KBase module: njs_sdk_test_1
+Module for testing NJSwrapper
 
 
 =cut
