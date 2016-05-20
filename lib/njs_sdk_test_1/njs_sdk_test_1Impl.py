@@ -12,11 +12,7 @@ import traceback
 
 class njs_sdk_test_1:
     '''
-    Module Name:
-    njs_sdk_test_1
-
-    Module Description:
-    A KBase module: njs_sdk_test_1
+    Module for testing NJSwrapper
     '''
 
     ######## WARNING FOR GEVENT USERS #######
