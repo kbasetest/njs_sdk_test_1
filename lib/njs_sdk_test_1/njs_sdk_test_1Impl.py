@@ -5,7 +5,7 @@ from pprint import pformat
 from biokbase.workspace.client import Workspace as workspaceService  # @UnresolvedImport @IgnorePep8
 from njs_sdk_test_1.GenericClient import GenericClient
 import time
-from multiprocessing.pool import ThreadPool
+from multiprocessing.pool import ThreadPool, ApplyResult
 import traceback
 #END_HEADER
 
@@ -101,7 +101,7 @@ class njs_sdk_test_1:
                 pool.close()
                 pool.join()
             try:
-                res = [r.get() for r in res if type(r).contains('ApplyResult')]
+                res = [r.get() for r in res if type(r) == ApplyResult]
             except Exception as e:
                 print('caught exception running jobs: ' + str(e))
                 traceback.print_exc()
