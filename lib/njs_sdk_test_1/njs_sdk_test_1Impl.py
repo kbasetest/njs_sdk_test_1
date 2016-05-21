@@ -94,11 +94,6 @@ class njs_sdk_test_1:
 
             res = []
             for j in jobs:
-                async = j.get('cli_async')
-                self.log(('{}synchronous client run of method: {} ' +
-                          'version: {} params:\n{}').format(
-                          async, j['method'], j['ver'], pformat(j['params'])))
-    #                 async.append(run(j))
                 if run_jobs_async:
                     res.append(pool.apply_async(run_cli, (j,)))
                 else:
