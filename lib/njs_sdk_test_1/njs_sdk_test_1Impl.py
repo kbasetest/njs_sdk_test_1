@@ -13,7 +13,7 @@ import traceback
 class njs_sdk_test_1:
     '''
     Module Name:
-    njs_sdk_test_1
+    njs_sdk_test
 
     Module Description:
     Module for testing NJSwrapper
