@@ -3,7 +3,7 @@
 import os
 from pprint import pformat
 from biokbase.workspace.client import Workspace as workspaceService  # @UnresolvedImport @IgnorePep8
-from njs_sdk_test_1.GenericClient import GenericClient
+from njs_sdk_test_1.GenericClient import GenericClient, ServerError
 import time
 from multiprocessing.pool import ThreadPool, ApplyResult
 import traceback
@@ -106,6 +106,9 @@ class njs_sdk_test_1:
             except Exception as e:
                 print('caught exception running jobs: ' + str(e))
                 traceback.print_exc()
+                if type(e) == ServerError:
+                    print('server side traceback:')
+                    print(e.data)
                 raise
             self.log('got job results\n' + pformat(res))
             results['jobs'] = res
