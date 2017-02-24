@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #BEGIN_HEADER
 # The header block is where all import statments should live
 import os
@@ -13,22 +14,22 @@ import traceback
 class njs_sdk_test_1:
     '''
     Module Name:
-    njs_sdk_test
+    njs_sdk_test_1
 
     Module Description:
     Module for testing NJSwrapper
     '''
 
-    ######## WARNING FOR GEVENT USERS #######
+    ######## WARNING FOR GEVENT USERS ####### noqa
     # Since asynchronous IO can lead to methods - even the same method -
     # interrupting each other, you must be *very* careful when using global
     # state. A method could easily clobber the state set by another while
     # the latter method is running.
-    #########################################
-    VERSION = "0.0.1"
-    GIT_URL = "https://github.com/kbasetest/njs_sdk_test_1"
-    GIT_COMMIT_HASH = "f5b4986d4a2e7d6df1ff5794394e5c6c50b568a3"
-    
+    ######################################### noqa
+    VERSION = "0.0.3"
+    GIT_URL = "https://github.com/rsutormin/njs_sdk_test_1"
+    GIT_COMMIT_HASH = "5178356a8a7f63be055cc581e9ea90dd53d6aed3"
+
     #BEGIN_CLASS_HEADER
     # Class variables and functions can be defined in this block
     def log(self, message, prefix_newline=False):
@@ -48,9 +49,13 @@ class njs_sdk_test_1:
         self.log('Callback URL: ' + self.generic_clientURL)
         #END_CONSTRUCTOR
         pass
-    
+
 
     def run(self, ctx, params):
+        """
+        :param params: instance of unspecified object
+        :returns: instance of unspecified object
+        """
         # ctx is the context object
         # return variables are: results
         #BEGIN run
@@ -145,7 +150,6 @@ class njs_sdk_test_1:
                              'results is not type object as required.')
         # return the results
         return [results]
-
     def status(self, ctx):
         #BEGIN_STATUS
         returnVal = {'state': "OK",
