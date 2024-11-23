@@ -1,0 +1,8 @@
+/bin/
+/.classpath
+/.project
+/.pydevproject
+test_local
+sdk.cfg
+/.settings/
+*py.bak-*
